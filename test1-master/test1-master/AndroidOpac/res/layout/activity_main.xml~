@@ -12,7 +12,7 @@
         android:layout_height="100dp"
         android:background="#008000"
         android:gravity="center"
-        android:text="AndroidOpac 1.0"
+        android:text="koha 1.0"
         android:textColor="#FFFF00"
         android:textSize="20sp"
         android:textStyle="bold" />

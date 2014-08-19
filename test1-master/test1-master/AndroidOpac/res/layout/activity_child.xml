@@ -12,7 +12,7 @@
         android:layout_height="100dp"
         android:background="#FFFF00"
         android:gravity="center"
-        android:text="This is Child Activity"
+        android:text="Day la man hinh con"
         android:textColor="#008040"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -22,6 +22,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Back to Main Activity" />
+        android:text="Quay lai man hinh chinh" />
 
 </LinearLayout>
