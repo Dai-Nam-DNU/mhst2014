@@ -166,7 +166,7 @@ public class KohaAuthHandler {
     					.putString(Constants.AUTH_SESSION_KEY, auth_token)
     					.commit()
     				;
-                    sendResult(auth_token, handler, context);
+    			    sendResult(auth_token, handler, context);
                     return true;
                 }
            } else {
@@ -217,7 +217,7 @@ public class KohaAuthHandler {
             if ( DEBUG ) Log.d(TAG, "Found header [" + h.getName() + ": " + h.getValue() + "]");
             
             if ( h.getName().equalsIgnoreCase(name) && h.getValue().startsWith(filter)) {
-            	if ( DEBUG ) Log.d(TAG, "Matched header [" + h.getName() + ": " + h.getValue() + "]");
+            if ( DEBUG ) Log.d(TAG, "Matched header [" + h.getName() + ": " + h.getValue() + "]");
             	return h.getValue();
             }
         }
@@ -238,8 +238,7 @@ public class KohaAuthHandler {
         }
         handler.post(new Runnable() {
             public void run() {
-            
-   //         	((AuthenticatorActivity) context).onAuthenticationResult(authToken);
+            	((AuthenticatorActivity) context).onAuthenticationResult(authToken);
             }
         });
     }

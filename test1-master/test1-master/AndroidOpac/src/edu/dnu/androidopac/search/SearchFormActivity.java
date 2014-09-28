@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import edu.dnu.androidopac.Constants;
 import edu.dnu.androidopac.EditPreferences;
 import edu.dnu.androidopac.R;
-//import edu.dnu.androidopac.authenticator.AuthenticatorActivity;
+import edu.dnu.androidopac.authenticator.AuthenticatorActivity;
 import edu.dnu.androidopac.log.LogConfig;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -51,9 +51,9 @@ public class SearchFormActivity extends Activity implements OnClickListener  {
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.search_form);
-  /*
+ 
         setUserString();
-  */      
+       
         
         // Set up click handlers for the text field and button
         ((Button) this.findViewById(R.id.btnSearchGo)).setOnClickListener(this);
@@ -72,7 +72,7 @@ public class SearchFormActivity extends Activity implements OnClickListener  {
 
         	
     }
-   /* 
+    
     public void setUserString() {
     	
     	String user = AuthenticatorActivity.getUserName();
@@ -86,7 +86,7 @@ public class SearchFormActivity extends Activity implements OnClickListener  {
     	}
     }
     
-*/
+
     
     public void addSearch(View v) {
 		LinearLayout first = (LinearLayout) this.findViewById(R.id.searchGroup2);

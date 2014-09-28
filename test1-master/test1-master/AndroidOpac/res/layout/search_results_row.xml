@@ -10,6 +10,13 @@
 		android:contentDescription="@string/cover_dec"
 		android:padding="8dp"
 	/>
+	<CheckBox
+        android:id="@+id/chkbook"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:checked="false"       
+        android:focusable="false"
+    />
 
 	<TextView android:id="@+id/title"
     	android:layout_width="wrap_content"

@@ -1,7 +1,13 @@
 package edu.dnu.androidopac.search;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -9,14 +15,17 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.dnu.androidopac.Constants;
+import edu.dnu.androidopac.Credits;
 import edu.dnu.androidopac.EditPreferences;
+import edu.dnu.androidopac.MainActivity;
 import edu.dnu.androidopac.R;
 import edu.dnu.androidopac.Record;
-//import edu.dnu.androidopac.authenticator.AuthenticatorActivity;
+import edu.dnu.androidopac.authenticator.AuthenticatorActivity;
 //import edu.dnu.androidopac.hold.PlaceHoldFormActivity;
 import edu.dnu.androidopac.log.LogConfig;
-
+import edu.dnu.androidopac.mybooks.MyBooksActivity;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -26,29 +35,27 @@ import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-
 import android.preference.PreferenceManager;
-
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
-
 import android.util.Log;
-
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.view.View.OnClickListener;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ExpandableListView;
+import android.widget.LinearLayout;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.ImageView;
@@ -77,8 +84,14 @@ public class SearchResultsActivity extends Activity implements OnChildClickListe
     ExpandableListView listview;
 	ExpandableListAdapter adapter = new ExpandableListAdapter(this, new ArrayList<String>(), 
 			new ArrayList<ArrayList<Record>>());
+	/////
+	private ArrayList<Boolean> group_check_states = new ArrayList<Boolean>() ;
+	private String uname=null;
+	private ArrayList<String> group_book_info = new ArrayList<String>() ;
+	public static Button btn_addbook;
 	
-    /** Called when the activity is first created. */
+	
+	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,7 +105,7 @@ public class SearchResultsActivity extends Activity implements OnChildClickListe
         listview.setOnChildClickListener(this);
         listview.setOnGroupExpandListener(this);
         
-    //    setUserString();
+        setUserString();
         
         m_extras = getIntent().getExtras();
         if (m_extras == null) {
@@ -167,27 +180,91 @@ public class SearchResultsActivity extends Activity implements OnChildClickListe
         	textViewBranchName.setText(branchname);
         	textViewBranchName.setVisibility(View.VISIBLE);
         } else {
-        	textViewBranchName.setVisibility(View.GONE);
-        	
-        }
-        
+        	textViewBranchName.setVisibility(View.GONE);        	
+        }       
 
 	}
  
-    /*
+    
     public void setUserString() {    	
     	String user = AuthenticatorActivity.getUserName();
     	TextView userID = (TextView) this.findViewById(R.id.resultUsername);
+    	btn_addbook = (Button) this.findViewById(R.id.btnAddBook);
     	
     	if (user==null){
     		userID.setText(R.string.user_not_logged);
     	}
     	else {
     		userID.setText(getResources().getString(R.string.user_logged) + " " + user);
+    	    uname=user;
+    	    btn_addbook.setVisibility(View.VISIBLE);
     	}
     }
-    */
+    
+    public void addBook(View v) {
+		//Them favorite book
+    	if ( DEBUG ) Log.d(TAG, "add Books : "+group_book_info.size());
+    	StringBuilder s = new StringBuilder();    
+    	//save into internal storage    	
+    	  
+    	  String FILENAME = uname.toString().trim()+".txt";    	  
+    	  File f=new File(getFilesDir()+"/"+FILENAME);
+    	  StringBuilder total = new StringBuilder();
+    	  if(f.exists()){
+    		  //doc file
+    		  try {
+      	        FileInputStream inputStream = openFileInput(FILENAME);
+      	        BufferedReader r = new BufferedReader(new InputStreamReader(inputStream));
+      	        String line;
+      	        while ((line = r.readLine()) != null) {
+      	            total.append(line);
+      	        }
+      	        r.close();
+      	        inputStream.close();
+      	        Log.d(TAG, "InFile contents: " + total);
+      	    } catch (Exception e) {
+      	    	Log.e(TAG, "Connection error: " + e.getMessage());
+      	    }    		  
+    	  }
+    	  
+    	//merge file
+		   if(group_book_info.size() != 0){	    	
+	    	 for (int i=0; i<group_book_info.size(); i++ )  
+			  if(group_check_states.get(i)){
+				  String line=group_book_info.get(i).toString();
+				  if (total.indexOf(line)==-1) s.append(line+"#");
+			   }
+	    	 total.append(s);
+	       }
+    	  
+    	  if (s!=null){
+    	  try {
+    		  //ghi file
+    		     FileOutputStream fos = openFileOutput(FILENAME,Context.MODE_PRIVATE);
+    		     fos.write(total.toString().getBytes());
+    		     fos.close();   		     
+    		     
+    		     Toast.makeText(this, getResources().getString(R.string.data_saved_inside_File)+FILENAME, 
+    						Toast.LENGTH_SHORT).show();
+    		     Log.d(TAG, "OutFile contents: " + total);
+    		     
+    		     //set visible for load button when data is written to file
+    		   //  load_bt.setVisibility(View.VISIBLE);
 
+    		    } catch (FileNotFoundException e) {
+    		    Log.e(TAG, "File Not Found error: " + e.getMessage());    		     
+    		    } catch (IOException e) {
+   		    	Log.e(TAG, "Connection error: " + e.getMessage());
+    		    }        
+    	  
+          }
+    	// Load up the my books intent
+	        Intent d = new Intent(this, MyBooksActivity.class);
+			
+			startActivity(d);
+      
+	}
+    
     public static Thread performOnBackgroundThread(final Runnable runnable) {
         final Thread t = new Thread() {
             @Override
@@ -262,9 +339,14 @@ public class SearchResultsActivity extends Activity implements OnChildClickListe
 		for (Iterator<Record> it = results.iterator(); it.hasNext(); ) { 
 				Record a = it.next();
 				adapter.addItem(a);
+				group_check_states.add((Boolean)false);
+				/////
+				String des=a.getDescription().toString();
+				String s=a.getTitle().toString()+","+des.substring(0, des.indexOf("."));
+				group_book_info.add(s);
 		}
-
-        // Set this blank adapter to the list view
+		
+		// Set this blank adapter to the list view
 		listview.setAdapter(adapter);
 	}
     /*
@@ -458,7 +540,27 @@ public class SearchResultsActivity extends Activity implements OnChildClickListe
 	        highlightSearchTerms(text);
 	        tv.setText(text);
 	        
-	        Record rec = (Record) getChild(groupPosition, 0);
+	        Record rec = (Record) getChild(groupPosition, 0);	      
+	        ///
+	        CheckBox ck = (CheckBox) convertView.findViewById(R.id.chkbook); 
+	        if (uname==null) ck.setVisibility(View.INVISIBLE);
+	        else ck.setVisibility(View.VISIBLE);
+	        if(ck.isChecked())group_check_states.set(groupPosition, true);
+	        else group_check_states.set(groupPosition, false);	        
+	        ck.setChecked(group_check_states.get(groupPosition));	        
+	        final int jgroupPosition=groupPosition;	        
+	        ck.setOnClickListener(new OnClickListener() 
+			{
+				@Override
+				public void onClick(View v) {
+					if (((CheckBox) v).isChecked()) 
+						group_check_states.set(jgroupPosition, true);       
+                    else 
+                    	group_check_states.set(jgroupPosition, false);
+				}
+			})   ; 	        
+	        
+	       
 	        ImageView iv = (ImageView) convertView.findViewById(R.id.thumb);
 	        InputStream imageInput = BookThumbnailService.getThumb(bURL,rec.getID());
 	       // InputStream imageInput = BookThumbnailService.checkGoogle(rec.getISBN());
@@ -495,6 +597,7 @@ public class SearchResultsActivity extends Activity implements OnChildClickListe
 				int groupPosition, int childPosition, long id) {
 			// TODO make this do the right thing
 			Record selectedRecord = (Record) getChild(groupPosition, childPosition);
+			
 		/*
 			Intent intent = new Intent(this.context, PlaceHoldFormActivity.class);
 			intent.putExtra("bib", (Parcelable) selectedRecord);
@@ -519,15 +622,18 @@ public class SearchResultsActivity extends Activity implements OnChildClickListe
 	@Override
 	public boolean onChildClick(ExpandableListView parent, View v,
 			int groupPosition, int childPosition, long id) {
-		adapter.onChildClick(parent, v, groupPosition, childPosition, id);
+		
+		adapter.onChildClick(parent, v, groupPosition, childPosition, id);		
 		parent.expandGroup(childPosition);
 		return false;
 	}
 	@Override
 	public void onGroupExpand(int groupPosition) {
+		
 		if(!mPrefs.getBoolean("limit.items", true))return;
 		for(int i = 0;i < listview.getCount();i++){
 			if (i != groupPosition)listview.collapseGroup(i);
 		}
 	}
+     
 }
